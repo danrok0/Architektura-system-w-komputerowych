@@ -1,0 +1,185 @@
+;zad 1
+
+; Inicjalizacja wartości początkowych w rejestrach
+MOV EAX, 27
+MOV EBX, 13
+
+; a. SUMA (Wynik: 40)
+MOV ECX, EAX    ; Kopiujemy 27 do ECX
+ADD ECX, EBX    ; ECX = ECX + EBX (27 + 13)
+
+; b. RÓŻNICA (Wynik: 14)
+MOV EDX, EAX    ; Kopiujemy 27 do EDX
+SUB EDX, EBX    ; EDX = EDX - EBX (27 - 13)
+
+; c. ILOCZYN (Wynik: 351)
+; Instrukcja MUL mnoży EAX przez podany rejestr. Wynik trafia do pary EDX:EAX
+MOV EAX, 27
+MOV EBX, 13
+MUL EBX         ; EAX = EAX * EBX 
+
+; d. ILORAZ i e. RESZTA Z DZIELENIA
+; Dzielna musi być w parze rejestrów EDX:EAX przed wykonaniem instrukcji DIV
+MOV EAX, 27
+MOV EBX, 13
+XOR EDX, EDX    ; Zerujemy EDX (przygotowanie górnej części dzielnej)
+DIV EBX         ; Dzielimy EDX:EAX przez EBX
+; Wynik: 
+; EAX = 2 (Iloraz)
+; EDX = 1 (Reszta)
+
+
+;zad 2
+
+; Opracowujemy wyrażenie: 6 2 - 3 7 + +
+
+; 1. Napotkano '6' -> na stos
+PUSH 6
+
+; 2. Napotkano '2' -> na stos
+PUSH 2
+
+; 3. Napotkano '-' (pobierz dwie liczby, odejmij i wrzuć wynik)
+POP EBX         ; Zdejmujemy 2 (drugi argument)
+POP EAX         ; Zdejmujemy 6 (pierwszy argument)
+SUB EAX, EBX    ; EAX = 6 - 2 = 4
+PUSH EAX        ; Wynik '4' wędruje na stos
+
+; 4. Napotkano '3' -> na stos
+PUSH 3
+
+; 5. Napotkano '7' -> na stos
+PUSH 7
+
+; 6. Napotkano '+' (pobierz dwie liczby, dodaj i wrzuć wynik)
+POP EBX         ; Zdejmujemy 7
+POP EAX         ; Zdejmujemy 3
+ADD EAX, EBX    ; EAX = 3 + 7 = 10
+PUSH EAX        ; Wynik '10' wędruje na stos
+
+; 7. Napotkano '+' (dodaj dwa ostatnie wyniki ze stosu)
+POP EBX         ; Zdejmujemy 10
+POP EAX         ; Zdejmujemy 4
+ADD EAX, EBX    ; EAX = 4 + 10 = 14
+PUSH EAX        ; Ostateczny wynik (14) jest na szczycie stosu
+
+
+;zad 3
+
+
+; 1. Obliczenie pola trójkąta: P = (a * h) / 2
+MOV EAX, 1764   ; podstawa (a)
+MOV EBX, 352    ; wysokość (h)
+MUL EBX         ; EDX:EAX = 1764 * 352 = 620928
+MOV EBX, 2
+DIV EBX         ; EAX = 620928 / 2 = 310464 (Otrzymane pole P)
+
+; 2. Sprawdzenie czy pole < 300000
+CMP EAX, 300000 ; Porównaj obliczone pole z 300000
+JL Mniejsze     ; JL (Jump if Less) - skocz jeśli mniejsze
+
+; Jeśli nie jest mniejsze (np. jest równe lub większe):
+MOV ECX, 0      ; Zwracamy wynik 0 (Fałsz)
+JMP KoniecZ3    ; Omijamy kod dla warunku prawdy
+
+Mniejsze:
+MOV ECX, 1      ; Zwracamy wynik 1 (Prawda)
+
+KoniecZ3:
+; Wynik logiczny operacji znajduje się w rejestrze ECX (będzie to 0)
+
+
+;zad 4
+
+MOV ECX, 125    ; Ustawiamy licznik pętli na 125 (idziemy od 125 do 1)
+MOV EAX, 0      ; Inicjalizujemy akumulator sumy na 0
+
+PetlaSumuj:
+ADD EAX, ECX    ; Dodaj obecną wartość licznika (od 125 w dół) do EAX
+DEC ECX         ; Zmniejsz licznik o 1 (DEC - Dekrementacja)
+CMP ECX, 0      ; Sprawdź czy licznik osiągnął 0
+JG PetlaSumuj   ; Skocz do 'PetlaSumuj' jeśli ECX > 0 (Jump if Greater)
+
+; W rejestrze EAX znajduje się wynik sumy = 7875
+
+
+zad 5
+
+
+MOV EAX, 3729583 ; Liczba do sprawdzenia (N)
+MOV ECX, 2       ; Zaczynamy sprawdzanie dzielników od 2
+
+SprawdzPierwsza:
+; Sprawdzamy czy dotarliśmy do N/2 (optymalizacja, wyżej dzielników nie będzie)
+MOV EBX, EAX
+SHR EBX, 1       ; EBX = N / 2
+CMP ECX, EBX
+JG JestPierwsza  ; Jeśli ECX > N/2, to nie znaleźliśmy dzielnika -> liczba pierwsza
+
+; Dzielimy N przez obecny dzielnik w ECX
+MOV EAX, 3729583 ; Odtwarzamy badaną liczbę (bo DIV ją nadpisuje)
+XOR EDX, EDX     ; Zerujemy resztę do dzielenia
+DIV ECX          ; EAX = EAX / ECX, EDX = Reszta z dzielenia
+CMP EDX, 0       ; Sprawdzamy, czy reszta wynosi 0
+JE NiePierwsza   ; JE (Jump if Equal) - jeśli reszta to 0, liczba jest podzielna
+
+INC ECX          ; Inkrementacja - próbujemy kolejny dzielnik (ECX + 1)
+JMP SprawdzPierwsza
+
+NiePierwsza:
+MOV EBX, 0       ; Zwracamy 0, bo liczba nie jest pierwsza
+JMP KoniecZ5
+
+JestPierwsza:
+MOV EBX, 1       ; Zwracamy 1, bo liczba jest pierwsza
+
+KoniecZ5:
+; Wynik (1 lub 0) znajduje się w rejestrze EBX
+
+
+;zad 6 
+
+
+
+MOV EAX, 3729583 ; Liczba poddawana analizie
+MOV ECX, 32      ; Sprawdzimy wszystkie 32 bity z rejestru
+MOV EBX, 0       ; Tu zliczymy ile jest jedynek
+
+LiczBity:
+ROR EAX, 1       ; (Rotate Right) Przesuwa najmłodszy bit do Flagi CF
+JNC Pomin        ; JNC (Jump if No Carry) - jeśli bit był zerem (CF=0), pomiń
+INC EBX          ; Jeśli CF=1, dotarliśmy tu, więc zwiększ licznik jedynek
+
+Pomin:
+DEC ECX          ; Zmniejsz licznik iteracji
+CMP ECX, 0       ; Czy sprawdziliśmy wszystkie 32 bity?
+JG LiczBity      ; Powtarzaj aż ECX zejdzie do zera
+
+; Po 32 obiegach w rejestrze EBX mamy ilość '1' w binarnej reprezentacji
+
+
+;zad 7
+
+
+
+MOV EAX, 3729583 ; Badana liczba
+MOV ECX, 8       ; Licznik pętli: 32 bity / 4 bity (na jedną cyfrę HEX) = 8 cyfr
+MOV EBX, 0       ; Licznik dla liter (cyfr od 10 w górę)
+
+SprawdzHex:
+MOV EDX, EAX     ; Kopiujemy aktualny stan liczby (aby jej bezpośrednio nie niszczyć w EDX)
+AND EDX, 0Fh     ; Maska bitowa: zeruje wszystko poza 4 najmłodszymi bitami
+                 ; 0Fh (0000 1111 binarnie) pozwala nam "odciąć" tylko pojedynczą cyfrę hex
+CMP EDX, 10      ; Porównujemy tę cyfrę (wartość od 0 do 15) z 10
+JL NastepnaHex   ; Jeśli mniejsze niż 10 (cyfry 0-9), przeskocz do następnej
+
+INC EBX          ; Skoro przeszło dalej (>= 10), oznacza to literę - zwiększ licznik
+
+NastepnaHex:
+SHR EAX, 4       ; Przesuń całą liczbę logicznie o 4 bity w prawo
+                 ; Oznacza to, że kolejna cyfra HEX zajmie teraz miejsce najmłodszych 4 bitów
+DEC ECX
+CMP ECX, 0
+JG SprawdzHex
+
+; Wynik w EBX będzie równy 3 (znalezione E, A oraz F dla liczby 38E8AF)
